@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="J-trade — seamless, high-speed trading on a secure, premium platform.">
+<meta name="theme-color" content="#050d18">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>J-trade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* J-trade — identité sombre assumée : une salle de marché ne s'éclaire pas.
+   Le fond, les textes et les accents sont peints explicitement, la page tient
+   donc sur n'importe quel host, clair ou sombre. */
+:root{
+  --nuit:#050d18;
+  --nuit-2:#081524;
+  --carte:#0d1e33;
+  --bord:#1a3251;
+  --bord-vif:#26507d;
+  --texte:#e9f1fb;
+  --sourd:#8ba3c0;
+  --cyan:#22d3ee;
+  --dore:#e0b352;
+  --hausse:#2bc47d;
+  --baisse:#f0556b;
+
+  --display:"Archivo","Segoe UI",system-ui,sans-serif;
+  --corps:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --data:"IBM Plex Mono","Consolas",monospace;
+
+  --max:1180px;
+  --r:12px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--nuit);
+  color:var(--texte);
+  font-family:var(--corps);
+  font-size:16px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:1px solid transparent}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+.enveloppe{max-width:var(--max);margin-inline:auto;padding-inline:22px}
+
+/* ── En-tête ─────────────────────────────────────────────── */
+header{
+  position:sticky;top:0;z-index:40;
+  background:rgba(5,13,24,.9);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--bord);
+}
+.nav{display:flex;align-items:center;gap:28px;padding-block:14px}
+.marque{
+  display:flex;align-items:center;gap:11px;margin-right:auto;
+  font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:-.5px;
+}
+.sigle{
+  width:34px;height:34px;border-radius:9px;flex:none;display:grid;place-items:center;
+  background:linear-gradient(150deg,#0e2338,#143351);
+  border:1.5px solid var(--cyan);
+}
+.marque em{font-style:normal;color:var(--cyan)}
+.liens{display:flex;gap:26px;font-size:14.5px;color:var(--sourd)}
+.liens a{transition:color .18s}
+.liens a:hover{color:var(--texte)}
+.actions{display:flex;gap:10px}
+.btn{
+  padding:9px 19px;border-radius:8px;font-size:14.5px;font-weight:600;
+  font-family:var(--corps);transition:transform .16s,filter .16s;
+}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.btn-or{background:linear-gradient(155deg,#ecc87e,#c9973f);color:#251902}
+.btn-cyan{background:var(--cyan);color:#03202a}
+.btn-fil{border-color:var(--dore);color:var(--dore);background:transparent}
+
+/* ── Hero ────────────────────────────────────────────────── */
+.hero{position:relative;padding-block:76px 90px;overflow:hidden}
+.halo{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(720px 400px at 76% 28%,rgba(34,211,238,.15),transparent 62%),
+    radial-gradient(520px 320px at 10% 78%,rgba(224,179,82,.07),transparent 62%);
+}
+.trame{
+  position:absolute;inset:0;pointer-events:none;opacity:.55;
+  background-image:
+    linear-gradient(rgba(26,50,81,.55) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(26,50,81,.55) 1px,transparent 1px);
+  background-size:44px 44px;
+  -webkit-mask-image:radial-gradient(circle at 50% 40%,#000 28%,transparent 76%);
+  mask-image:radial-gradient(circle at 50% 40%,#000 28%,transparent 76%);
+}
+.hero-grille{
+  position:relative;display:grid;grid-template-columns:1.05fr .95fr;
+  gap:54px;align-items:center;
+}
+h1{
+  font-family:var(--display);font-weight:800;
+  font-size:clamp(34px,5vw,57px);line-height:1.08;letter-spacing:-1.6px;
+  text-wrap:balance;
+}
+h1 em{font-style:normal}
+h1 .c{color:var(--cyan)}
+h1 .o{color:var(--dore)}
+.accroche{margin-block:22px 30px;color:var(--sourd);font-size:16.5px;max-width:33em}
+.cta{display:flex;gap:13px;flex-wrap:wrap}
+.cta .btn{padding:13px 27px;font-size:15.5px;border-radius:26px}
+
+/* ── Panneau de marché ───────────────────────────────────── */
+.panneau{
+  background:linear-gradient(168deg,#0c1d31,#071322);
+  border:1px solid var(--bord);border-radius:var(--r);padding:15px;
+  box-shadow:0 28px 64px rgba(0,0,0,.55),0 0 0 1px rgba(34,211,238,.08);
+}
+.panneau-tete{
+  display:flex;align-items:center;gap:9px;
+  padding-bottom:13px;margin-bottom:13px;border-bottom:1px solid var(--bord);
+}
+.feux{display:flex;gap:6px}
+.feu{width:10px;height:10px;border-radius:50%}
+.champ{flex:1;height:26px;border-radius:7px;background:#0a1828;border:1px solid var(--bord)}
+.cours{display:grid;gap:7px}
+.ligne{
+  display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;
+  padding:10px 12px;border-radius:9px;
+  background:#0a1828;border:1px solid rgba(26,50,81,.7);
+  font-size:13.5px;
+}
+.ligne .sym{font-weight:600;letter-spacing:.2px}
+.ligne .px,.ligne .var{font-family:var(--data);font-variant-numeric:tabular-nums}
+.h{color:var(--hausse)} .b{color:var(--baisse)}
+.courbe{
+  margin-top:13px;height:134px;border-radius:9px;padding:8px;
+  background:#0a1828;border:1px solid var(--bord);
+}
+.courbe svg{width:100%;height:100%;display:block}
+
+/* ── Sections ────────────────────────────────────────────── */
+section{padding-block:70px}
+.bandeau-sombre{background:var(--nuit-2);border-block:1px solid var(--bord)}
+.eyebrow{
+  font-family:var(--data);font-size:11.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--cyan);text-align:center;margin-bottom:12px;
+}
+h2{
+  font-family:var(--display);font-weight:700;
+  font-size:clamp(25px,3.3vw,35px);letter-spacing:-.8px;text-align:center;
+  text-wrap:balance;
+}
+.chapo{color:var(--sourd);text-align:center;max-width:46em;margin:12px auto 44px}
+.cartes{display:grid;grid-template-columns:repeat(auto-fit,minmax(266px,1fr));gap:20px}
+.carte{
+  background:var(--carte);border:1px solid var(--bord);border-radius:var(--r);
+  padding:26px;transition:transform .2s,border-color .2s;
+}
+.carte:hover{transform:translateY(-4px);border-color:var(--bord-vif)}
+.carte h3{font-family:var(--display);font-size:17px;font-weight:600;margin-bottom:9px}
+.carte p{color:var(--sourd);font-size:14.5px}
+.puce{
+  width:34px;height:34px;border-radius:9px;margin-bottom:14px;
+  display:grid;place-items:center;background:rgba(34,211,238,.1);
+  border:1px solid rgba(34,211,238,.28);
+}
+
+.chiffres{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:18px}
+.chiffre{
+  background:var(--carte);border:1px solid var(--bord);border-radius:var(--r);
+  padding:26px 18px;text-align:center;
+}
+.chiffre b{
+  display:block;font-family:var(--data);font-size:30px;font-weight:600;
+  color:var(--cyan);font-variant-numeric:tabular-nums;letter-spacing:-1px;
+}
+.chiffre span{color:var(--sourd);font-size:13px}
+
+.appel{
+  background:linear-gradient(145deg,#0e2740,#0a1a2c);
+  border:1px solid var(--bord);border-radius:20px;padding:54px 30px;text-align:center;
+}
+
+footer{border-top:1px solid var(--bord);padding-block:30px;
+  color:var(--sourd);font-size:13.5px;text-align:center}
+
+@media (max-width:900px){
+  .hero-grille{grid-template-columns:1fr;gap:40px}
+  .liens{display:none}
+  .hero{padding-block:50px 62px}
+}
+@media (max-width:520px){
+  .actions .btn-or{display:none}
+  .cta .btn{flex:1 1 100%;text-align:center}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+
+<header>
+  <div class="enveloppe nav">
+    <div class="marque">
+      <span class="sigle" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#22d3ee"
+             stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 17l6-7 4 4 6-8"/>
+          <path d="M20 6h-4M20 6v4" stroke="#e0b352"/>
+        </svg>
+      </span>
+      <span>J<em>-trade</em></span>
+    </div>
+    <nav class="liens">
+      <a href="#plateforme">Platform</a>
+      <a href="#marches">Markets</a>
+      <a href="#academie">Academy</a>
+      <a href="#atouts">Features</a>
+    </nav>
+    <div class="actions">
+      <button class="btn btn-or">Log In</button>
+      <button class="btn btn-cyan">Start Trading</button>
+    </div>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="halo"></div>
+  <div class="trame"></div>
+  <div class="enveloppe hero-grille">
+    <div>
+      <h1>Unlock Your Global<br>Trading Potential<br>with <em class="c">J</em><em class="o">-trade</em></h1>
+      <p class="accroche">
+        Experience seamless, high-speed trading on a secure, premium platform.
+        Master the markets with advanced tools, real-time data, and world-class
+        analytics.
+      </p>
+      <div class="cta">
+        <button class="btn btn-cyan">Open Free Account →</button>
+        <button class="btn btn-fil">Learn More</button>
+      </div>
+    </div>
+
+    <div class="panneau" id="plateforme">
+      <div class="panneau-tete">
+        <div class="feux" aria-hidden="true">
+          <span class="feu" style="background:#f0556b"></span>
+          <span class="feu" style="background:#e0b352"></span>
+          <span class="feu" style="background:#2bc47d"></span>
+        </div>
+        <div class="champ"></div>
+      </div>
+      <div class="cours">
+        <div class="ligne"><span class="sym">EUR/USD</span><span class="px">1.0843</span><span class="var h">+0.83 %</span></div>
+        <div class="ligne"><span class="sym">BTC/USD</span><span class="px">64 210</span><span class="var h">+6.20 %</span></div>
+        <div class="ligne"><span class="sym">GBP/JPY</span><span class="px">193.55</span><span class="var b">−0.36 %</span></div>
+        <div class="ligne"><span class="sym">XAU/USD</span><span class="px">2 034.8</span><span class="var h">+1.12 %</span></div>
+      </div>
+      <div class="courbe">
+        <svg viewBox="0 0 320 118" preserveAspectRatio="none" role="img"
+             aria-label="Évolution du marché sur la séance">
+          <defs>
+            <linearGradient id="aire" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#22d3ee" stop-opacity=".32"/>
+              <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M0,90 L26,82 L52,88 L78,67 L104,73 L130,53 L156,59 L182,39 L208,45 L234,27 L260,33 L286,19 L320,23 V118 H0 Z" fill="url(#aire)"/>
+          <path d="M0,90 L26,82 L52,88 L78,67 L104,73 L130,53 L156,59 L182,39 L208,45 L234,27 L260,33 L286,19 L320,23"
+                fill="none" stroke="#22d3ee" stroke-width="2"/>
+          <circle cx="320" cy="23" r="3.5" fill="#22d3ee"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="atouts">
+  <div class="enveloppe">
+    <p class="eyebrow">Platform</p>
+    <h2>Built for serious traders</h2>
+    <p class="chapo">Everything you need to read the market and act on it.</p>
+    <div class="cartes">
+      <div class="carte">
+        <div class="puce" aria-hidden="true">⚡</div>
+        <h3>Real-time execution</h3>
+        <p>Millisecond order routing on a low-latency infrastructure.</p>
+      </div>
+      <div class="carte">
+        <div class="puce" aria-hidden="true">📊</div>
+        <h3>Multi-timeframe analysis</h3>
+        <p>From three-second candles to daily structure, one coherent read.</p>
+      </div>
+      <div class="carte">
+        <div class="puce" aria-hidden="true">🛡️</div>
+        <h3>Secure by design</h3>
+        <p>Encrypted sessions, segregated funds, strict access control.</p>
+      </div>
+      <div class="carte">
+        <div class="puce" aria-hidden="true">🌍</div>
+        <h3>Global markets</h3>
+        <p>Forex, crypto, indices, commodities and equities in one place.</p>
+      </div>
+      <div class="carte">
+        <div class="puce" aria-hidden="true">🤖</div>
+        <h3>Automated signals</h3>
+        <p>Conviction-based alerts, delivered straight to Telegram.</p>
+      </div>
+      <div class="carte">
+        <div class="puce" aria-hidden="true">🎓</div>
+        <h3>Academy</h3>
+        <p>Learn the method behind the numbers, not just the buttons.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="marches" class="bandeau-sombre">
+  <div class="enveloppe">
+    <div class="chiffres">
+      <div class="chiffre"><b>180+</b><span>Instruments</span></div>
+      <div class="chiffre"><b>92 %</b><span>Top payout</span></div>
+      <div class="chiffre"><b>24/7</b><span>OTC markets</span></div>
+      <div class="chiffre"><b>&lt;15 ms</b><span>Execution</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="academie">
+  <div class="enveloppe">
+    <div class="appel">
+      <h2>Start trading in minutes</h2>
+      <p class="chapo" style="margin-bottom:28px">
+        Open a free account, explore the platform, and trade when you are ready.
+      </p>
+      <button class="btn btn-cyan" style="padding:14px 34px;border-radius:26px">
+        Open Free Account →
+      </button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="enveloppe">
+    J-trade — Trading involves risk. Past performance does not guarantee future results.
+  </div>
+</footer>
+
+<script>
+  // Ouverte comme Web App Telegram, la page se déplie et adopte les couleurs
+  // de l'application. Hors Telegram, elle reste un site ordinaire.
+  (function () {
+    var tg = window.Telegram && window.Telegram.WebApp;
+    if (!tg) return;
+    try {
+      tg.ready();
+      tg.expand();
+      if (tg.setHeaderColor) tg.setHeaderColor('#050d18');
+      if (tg.setBackgroundColor) tg.setBackgroundColor('#050d18');
+    } catch (e) { /* sans effet hors Telegram */ }
+  })();
+</script>
+
+</html>

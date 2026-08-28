@@ -1,0 +1,11 @@
+# Dépôt PUBLIC — liste blanche stricte.
+#
+# Tout est ignoré par défaut. Seuls les fichiers explicitement autorisés
+# ci-dessous peuvent être publiés. Aucune logique du bot, aucune clé, aucun
+# script ne peut se retrouver en ligne par mégarde.
+
+*
+
+!index.html
+!.nojekyll
+!.gitignore
