@@ -72,12 +72,17 @@ header{
 .liens{display:flex;gap:26px;font-size:14.5px;color:var(--sourd)}
 .liens a{transition:color .18s}
 .liens a:hover{color:var(--texte)}
-.actions{display:flex;gap:10px}
+/* Trois boutons possibles ici : sans repli, la barre déborde entre 520 et
+   900 px, là où le menu est déjà masqué mais l'écran encore étroit. */
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 .btn{
   padding:9px 19px;border-radius:8px;font-size:14.5px;font-weight:600;
   font-family:var(--corps);transition:transform .16s,filter .16s;
 }
 .btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+/* Les boutons sont en inline-flex : sans ceci, `hidden` resterait sans effet
+   et les deux variantes s'afficheraient l'une sur l'autre. */
+[hidden]{display:none !important}
 .btn-or{background:linear-gradient(155deg,#ecc87e,#c9973f);color:#251902}
 .btn-cyan{background:var(--cyan);color:#03202a}
 .btn-fil{border-color:var(--dore);color:var(--dore);background:transparent}
@@ -224,7 +229,8 @@ footer{border-top:1px solid var(--bord);padding-block:30px;
     </nav>
     <div class="actions">
       <a class="btn btn-or" href="https://t.me/MonSolderCryptoBOT" target="_blank" rel="noopener">Log In</a>
-      <a class="btn btn-cyan" href="https://pocket-friends.co/r/7w4clatzu9" target="_blank" rel="noopener">Start Trading</a>
+      <a class="btn btn-fil" data-parrainage data-si-non-inscrit href="https://pocket-friends.co/r/7w4clatzu9" target="_blank" rel="noopener">Sign Up</a>
+      <a class="btn btn-cyan" href="https://pocketoption.com/en/cabinet/" target="_blank" rel="noopener">Start Trading</a>
     </div>
   </div>
 </header>
@@ -241,7 +247,8 @@ footer{border-top:1px solid var(--bord);padding-block:30px;
         analytics.
       </p>
       <div class="cta">
-        <a class="btn btn-cyan" href="https://pocket-friends.co/r/7w4clatzu9" target="_blank" rel="noopener">Open Free Account →</a>
+        <a class="btn btn-cyan" data-parrainage data-si-non-inscrit href="https://pocket-friends.co/r/7w4clatzu9" target="_blank" rel="noopener">Open Free Account →</a>
+        <a class="btn btn-cyan" data-si-inscrit hidden href="https://pocketoption.com/en/cabinet/" target="_blank" rel="noopener">Go to Platform →</a>
         <a class="btn btn-fil" href="#atouts">Learn More</a>
       </div>
     </div>
@@ -335,10 +342,17 @@ footer{border-top:1px solid var(--bord);padding-block:30px;
   <div class="enveloppe">
     <div class="appel">
       <h2>Start trading in minutes</h2>
-      <p class="chapo" style="margin-bottom:28px">
+      <p class="chapo" style="margin-bottom:28px" data-si-non-inscrit>
         Open a free account, explore the platform, and trade when you are ready.
       </p>
-      <a class="btn btn-cyan" style="padding:14px 34px;border-radius:26px" href="https://pocket-friends.co/r/7w4clatzu9" target="_blank" rel="noopener">Open Free Account →</a>
+      <p class="chapo" style="margin-bottom:28px" data-si-inscrit hidden>
+        Your account is ready. Open the platform and trade when you are.
+      </p>
+      <a class="btn btn-cyan" style="padding:14px 34px;border-radius:26px" data-parrainage data-si-non-inscrit href="https://pocket-friends.co/r/7w4clatzu9" target="_blank" rel="noopener">Open Free Account →</a>
+      <a class="btn btn-cyan" style="padding:14px 34px;border-radius:26px" data-si-inscrit hidden href="https://pocketoption.com/en/cabinet/" target="_blank" rel="noopener">Go to Platform →</a>
+      <p class="chapo" style="margin-top:22px;font-size:14px;opacity:.72" data-si-inscrit hidden>
+        No account yet? <a data-parrainage data-reset href="https://pocket-friends.co/r/7w4clatzu9" target="_blank" rel="noopener">Create one here</a>.
+      </p>
     </div>
   </div>
 </section>
@@ -350,6 +364,42 @@ footer{border-top:1px solid var(--bord);padding-block:30px;
 </footer>
 
 <script>
+  // « Start Trading » mène à la plateforme, jamais à l'inscription : quelqu'un
+  // qui a déjà un compte n'a pas à repasser par une page d'ouverture. Ceux qui
+  // n'ont pas encore de compte gardent, eux, un bouton d'inscription bien
+  // visible — et il porte le lien de parrainage.
+  //
+  // Le seul signal disponible côté navigateur est le clic sur ce lien : il est
+  // mémorisé localement, par appareil. Ce n'est pas une preuve d'inscription,
+  // c'est ce qui évite de proposer un compte à qui vient d'en ouvrir un.
+  (function () {
+    var CLE = 'jtrade.parrainage';
+    var inscrit = false;
+    try { inscrit = localStorage.getItem(CLE) === '1'; } catch (e) { /* navigation privée */ }
+
+    function appliquer() {
+      document.querySelectorAll('[data-si-non-inscrit]').forEach(function (el) {
+        el.hidden = inscrit;
+      });
+      document.querySelectorAll('[data-si-inscrit]').forEach(function (el) {
+        el.hidden = !inscrit;
+      });
+    }
+
+    document.querySelectorAll('[data-parrainage]').forEach(function (lien) {
+      lien.addEventListener('click', function () {
+        // `data-reset` sert à celui qui se dit inscrit à tort : le lien le
+        // renvoie vers l'inscription sans reverrouiller son affichage.
+        if (lien.hasAttribute('data-reset')) return;
+        try { localStorage.setItem(CLE, '1'); } catch (e) { /* sans effet */ }
+        inscrit = true;
+        appliquer();
+      });
+    });
+
+    appliquer();
+  })();
+
   // Ouverte comme Web App Telegram, la page se déplie et adopte les couleurs
   // de l'application. Hors Telegram, elle reste un site ordinaire.
   (function () {
